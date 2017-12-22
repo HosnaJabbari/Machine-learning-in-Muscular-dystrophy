@@ -38,6 +38,8 @@ def find_Model(data_frame, target_feature_name, initial_subset_len, k_fold, bins
 #   results = model_selection.cross_validate(lreg, X_data, y_data, cv=k, scoring=scoring_metrics)
     y_data = data_frame[target_feature_name]
     
+    min_error = float('Inf')
+    min_subset = []
     for subset in max_subsets:
         col = [i.replace('dummy', '') for i in subset]
         #X_data = df[list(subset)]
@@ -45,8 +47,17 @@ def find_Model(data_frame, target_feature_name, initial_subset_len, k_fold, bins
         #print X_data
        
         result = cross_validation(lreg, X_data, y_data, k_fold) 
-        print(result)
+        #print(result)
+        
+
         # TODO find the model with the minimum error
+        test_errors = result['test_neg_mean_squared_error']
+        avg_error = sum(test_errors)/float(len(test_errors)) 
+        print test_errors, avg_error
+        if avg_error < abs(min_error):
+            min_error = avg_error
+            min_subset = subset
+    print 'min_error =', min_error, '\nmin_subset =', min_subset
 
 
 if __name__ == '__main__':
