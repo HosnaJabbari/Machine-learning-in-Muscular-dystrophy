@@ -46,8 +46,7 @@ def find_Model(data_frame, target_feature_name, initial_subset_len, k_fold, bins
        
         result = cross_validation(lreg, X_data, y_data, k_fold) 
         print(result)
-        return
-
+        # TODO find the model with the minimum error
 
 
 if __name__ == '__main__':
