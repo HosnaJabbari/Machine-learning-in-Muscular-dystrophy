@@ -7,7 +7,8 @@ import pandas
 def cross_validation(lreg, X_data, y_data, k_fold):
     # K-FOLD CROSS VALIDATION
     scoring_metrics = ['neg_mean_squared_error']
-    results = model_selection.cross_validate(lreg, X_data, y_data, cv=k_fold, scoring=scoring_metrics)
+    result = model_selection.cross_validate(lreg, X_data, y_data, cv=k_fold, scoring=scoring_metrics)
+    return result
 
 
 
@@ -41,7 +42,7 @@ def find_Model(data_frame, target_feature_name, initial_subset_len, k_fold, bins
         col = [i.replace('dummy', '') for i in subset]
         #X_data = df[list(subset)]
         X_data = data_frame[col]
-        print X_data
+        #print X_data
        
         result = cross_validation(lreg, X_data, y_data, k_fold) 
         print(result)
