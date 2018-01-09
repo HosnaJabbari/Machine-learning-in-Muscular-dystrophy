@@ -36,7 +36,8 @@ def convert_nominal_to_int(df):
 
 ##########################Test if df has changed at the end (i.e., columns is not a view only)
 #Gives us the ganularity of 11
-def convert_normalized_to_discrete_equal_section(df):
+def convert_normalized_to_discrete_equal_section(data_frame):
+    df = data_frame.copy()
     columns = df.columns
     for c in columns:
         temp_list = []
@@ -51,6 +52,7 @@ def convert_normalized_to_discrete_equal_section(df):
 
 
 def convert_normalized_to_discrete_equal_bin(df, bins_num):
+#    df = data_frame.copy()    
     columns = df.columns
     for c in columns:
         temp_columns = []
