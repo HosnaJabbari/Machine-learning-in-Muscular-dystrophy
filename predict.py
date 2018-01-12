@@ -103,7 +103,7 @@ def learner(data_frame, target_feature_name, initial_subset_len, k_fold, bins_nu
     # Feature selection
 #    print('old_df', data_frame)
     df = data_frame.copy() # Make a copy of data frame to keep the original data unchanged (since find_best_features first normalizes the data and then discretizes it.)
-    feature_subset, dummy_error = find_best_features(df, target_feature_name, initial_subset_len, k_fold, bins_num, error_range) # This error is not valid, should be replaced with average errors of the crosvalidation in the following
+    feature_subset, dummy_error = find_best_features(df, target_feature_name, initial_subset_len, k_fold, bins_num, error_range) # This calculated error is not valid, should be replaced with average errors of the crosvalidation in the following
 #    print('new_df', df)
     # Learning using all data rows as input
     lreg = learn(data_frame, target_feature_name, feature_subset)
@@ -144,20 +144,29 @@ def learner(data_frame, target_feature_name, initial_subset_len, k_fold, bins_nu
 if __name__ == '__main__':
     
     #Initialization
-    f_addr = '/home/seyedmah/Desktop/normalized_data_Dec19.xlsx'
+    f_addr = '/home/seyedmah/Desktop/normalized_data_Jan10.xlsx'
     target_feature_name = 'skip_percentage'
-    initial_subset_len = 54
+    initial_subset_len = 55 # can be set to any number, we set it to all number of features
     bins_num = 11 # It is fixed according to convert_normalized_to_discrete function
     error_range = 0.0001
-    k_fold = 7
+    k_fold = 5
 
     #Read input
     df = c_iscore.read_file(f_addr)
     #df = c_iscore.convert_normalized_to_discrete_equal_bin(data_frame, bins_num)
 
+    # Learn ML model
     lreg, avg_error, feature_subset = learner(df, target_feature_name, initial_subset_len, k_fold, bins_num, error_range)   
     
-    #Print Information
+    # Predict
+    columns = [i.replace('dummy', '') for i in feature_subset]
+    X_data = df[columns]
+    observed_y_data = df[target_feature_name.replace('dummy', '')]
+    predict_y_data = lreg.predict(X_data)
+    thresh_value = 0.3
+    
+    # Print Information
+    print()
     print('Linear regression model:', lreg)
     print('Features: ', feature_subset) # TODO check if the order of the features are the same as the coefficients
     print('Coefficients: ', lreg.coef_)
@@ -171,13 +180,7 @@ if __name__ == '__main__':
     print 'Accuracy: ', calculate_accuracy(observed_y_data, predict_y_data, thresh_value)
 
     # Plot
-    columns = [i.replace('dummy', '') for i in feature_subset]
-    X_data = df[columns]
-    observed_y_data = df[target_feature_name.replace('dummy', '')]
-    predict_y_data = lreg.predict(X_data)
-    
     step = 0.01
-    thresh_value = 0.3
     x_thresh = np.arange(-0.1, 1, step)
     y_thresh = np.arange(0.0, 1, step)
     x_threshold_line = [thresh_value for i in range(0, len(x_thresh))]
