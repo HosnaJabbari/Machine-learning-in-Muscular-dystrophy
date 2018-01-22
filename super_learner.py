@@ -37,6 +37,17 @@ def iscore_handler(data_frame, target_feature_name, initial_subset_len, bins_num
     max_score_subsets = c_iscore.feature_selection(df, target_feature_name, initial_subset_len, bins_num, error_range) # TODO check if the feature selection excludes the target column from the dependant column
     return max_score_subsets    
 
+def get_dependent_data(df, feature_set):
+    cols = [i.replace('dummy', '') for i in feature_set]
+    X_dependent_data = df[cols]
+    return X_dependent_data
+
+
+def get_independent_data(df, target_feature_name):
+    target_col_name = target_feature_name.replace('dummy', '')
+    y_indep_data = train_df[target_col_name]
+    return y_indep_data
+
 
 def find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name):
     best_feature_set = []
@@ -44,10 +55,12 @@ def find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_f
     min_error = float("inf")  # Assume errors are positive, otherwise we consider the absolute value
 
     for feature_set in max_score_subsets:
-        cols = [i.replace('dummy', '') for i in feature_set]
-        X_dependent_data = train_df[cols]
-        target_col_name = target_feature_name.replace('dummy', '')
-        y_indep_data = train_df[target_col_name]
+#        cols = [i.replace('dummy', '') for i in feature_set]
+#        X_dependent_data = train_df[cols]
+        X_dependent_data = get_dependent_data(train_df, feature_set)
+#        target_col_name = target_feature_name.replace('dummy', '')
+#        y_indep_data = train_df[target_col_name]
+        y_indep_data = get_independent_data(train_df, target_feature_name)
 
         test_X_data = test_df[cols]
         test_y_data = test_df[target_col_name]
@@ -62,19 +75,21 @@ def find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_f
         
 
 
-def super_learner(data_frame, bin_num, kfold):
+def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, error_range):
     # initialization
     learners_types = get_learner_types()  # TODO define the function
     partitions = partition(df, k_fold)
 
     best_learner_name = ''
 
+    best_feature_set = []
     for learner_name in learner_types:
         min_error = float('Inf')
         avg_error = 0
-        best_feature_set = []
         tmp_feature_set = []  # HOW CAN WE SAY WHICH tmp_feature_set OF EACH FOLD SHOULD BE THE REPRESENTATIVE OF
         # all k folds?
+        best_tmp_error = float('Inf')
+        best_tmp_set = []
         for i in xrange(len(partitions)):
             test_df = partitions[i]
             train_df = pandas.concat(partitions[:i] + partitions[i+1:])
@@ -83,8 +98,21 @@ def super_learner(data_frame, bin_num, kfold):
             tmp_feature_set, tmp_learner, tmp_error = find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name)
                 
             avg_error += tmp_error
+            if tmp_error < best_tmp_error: # We keep the set with minimum error among all the k-fold
+                best_tmp_error = tmp_error
+                best_tmp_set = tmp_feature_set
 
         avg_error /= len(partitions)
         if avg_error < min_error:
             best_learner_name = learner_name
+            best_feature_set = best_tmp_set
+    X_dependent_data = get_dependent_data(data_frame, best_feature_set)
+    indep_data = get_independent_data(data_frame, target_feature_name)    
+    best_learner = learn(X_dependent_data, y_indep_data, learner_name)       
+    
+    return best_learner, best_feature_set
+
+
+def SL_cross_validation():
+
 
