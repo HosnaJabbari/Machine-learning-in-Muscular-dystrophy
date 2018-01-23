@@ -18,8 +18,10 @@ class Classifier:
 
     
     def instanciate(self, classifier_type): 
-    
-
+        '''Get a valid classifier type and return an instance of that classifier. Valid classifier types are defined in the Classifier_type enumeratoin class.'''
+        return
+         
 
     def represent(self):
-        #  TODO
+        '''Represent a classifier using the information obtained from fitting a model to the data. Return the model details throughly'''
+        return
