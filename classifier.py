@@ -11,17 +11,17 @@ class Classifier_type(Enum):
 
 
 # Defining an abstract base class to represent the API of a set of classifiers
-class Classifier:
+class Classifier(abc):
    
     def __init__(self):
         self.type = None 
 
-    
+    @abc.abstractmethod 
     def instanciate(self, classifier_type): 
         '''Get a valid classifier type and return an instance of that classifier. Valid classifier types are defined in the Classifier_type enumeratoin class.'''
         return
          
-
+    @abc.abstractmethod
     def represent(self):
         '''Represent a classifier using the information obtained from fitting a model to the data. Return the model details throughly'''
         return
