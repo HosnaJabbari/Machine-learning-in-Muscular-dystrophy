@@ -156,10 +156,10 @@ def SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bin
     return avg_error
       
 def apply_super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold):
-    slearner, features = super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold)
+    learning_model, features = super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold)
     error = SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold)
 
-    return slearner, features, error
+    return learning_model, features, error
 
 
 def calculate_accuracy(observed_list, predict_list, thresh_value):
@@ -195,15 +195,15 @@ if __name__ == '__main__':
     df = c_iscore.read_file(f_addr)
 
     # Learn ML model
-    learner, avg_error, feature_subset = apply_super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold)   
+    learning_model, avg_error, feature_subset = apply_super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold)   
     # Predict
     X_data = get_dependent_data(df, feature_set)
     observed_y_data = get_independent_data(df, target_feature_name)
-    predict_y_data = learner.predict(X_data)
+    predict_y_data = learning_model.predict(X_data)
 
     # Print Information
     print()
-    print('Machine learning model:', learner)
+    print('Machine learning model:', learning_model)
     print('Features: ', feature_subset) # TODO check if the order of the features are the same as the coefficients
 #    print('Coefficients: ', learner.coef_)
     print('Intercept:', learner.intercept_)
