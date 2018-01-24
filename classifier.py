@@ -21,13 +21,12 @@ class Classifier(abc.ABC):
 #class Classifier(metaclass=abc.ABCMeta):
    
     @abc.abstractmethod
-    def __init__(self, classifier_type):
+    def __init__(self):
         """"This init function must be called by the subclasses."""
-        self.type =  classifier_type # TODO check if it blongs to only the parent class (i.e. all instances) or the instsnce
         self.classifier = None
 
     @abc.abstractmethod 
-    def instanciate(self, classifier_type): 
+    def instanciate(self): 
         """Get a valid classifier type and return an instance of that classifier (also the classifier should be assigned to self.classifier variable/property). Valid classifier types are defined in the Classifier_type enumeratoin class."""
         return
          
@@ -38,18 +37,18 @@ class Classifier(abc.ABC):
 
     def isExist_classifier():
         if self.classifier == None:
-            'No classifier is instanciated. Please use instanciate(classifier_type) first.'
+            'No classifier is instanciated. Please use instanciate() first.'
             return False
         return True
 
 
 class Linear_regression(Classifier):
     
-    def __init__(self, classifier_type):
-        super(Linear_regression, self),__inint__(classifier_type)
+    def __init__(self):
+        super(Linear_regression, self),__inint__()
     
     
-    def instanciate(self, classifier_type):
+    def instanciate(self):
         self.classifier = linear_model.LinearRegression() # Create linear regression object
         return self.classifier
     
@@ -66,11 +65,11 @@ class Linear_regression(Classifier):
 
 class KNeighbors_regressor(Classifier):
     
-    def __init__(self, classifier_type, neighbors_num):
-        super(Linear_regression, self),__inint__(classifier_type)
+    def __init__(self, neighbors_num):
+        super(Linear_regression, self),__inint__()
         self.neighbors_num = neighbors_num
     
-    def instanciate(self, classifier_type):
+    def instanciate(self):
         self.classifier = NearestNeighbors(n_neighbors = self.neighbors_num)
         return self.classifier
     
@@ -85,11 +84,11 @@ class KNeighbors_regressor(Classifier):
 
 class Decision_tree_regressor(Classifier):
     
-    def __init__(self, classifier_type):
-        super(Linear_regression, self),__inint__(classifier_type)
+    def __init__(self):
+        super(Linear_regression, self),__inint__()
     
     
-    def instanciate(self, classifier_type):
+    def instanciate(self):
         self.classifier = DecisionTreeRegressor(random_state=0)
         return self.classifier
     
@@ -109,11 +108,11 @@ class Decision_tree_regressor(Classifier):
 
 class SVR_linear(Classifier):
 
-    def __init__(self, classifier_type):
-        super(Linear_regression, self),__inint__(classifier_type)
+    def __init__(self):
+        super(Linear_regression, self),__inint__()
 
 
-    def instanciate(self, classifier_type):
+    def instanciate(self):
         self.classifier = SVR(kernel='linear', C=1e3)
         return self.classifier
 
@@ -134,11 +133,11 @@ class SVR_linear(Classifier):
 
 class SVR_RBF(Classifier):
 
-    def __init__(self, classifier_type):
-        super(Linear_regression, self),__inint__(classifier_type)
+    def __init__(self):
+        super(Linear_regression, self),__inint__()
 
 
-    def instanciate(self, classifier_type):
+    def instanciate(self):
         self.classifier = SVR(kernel='rbf', C=1e3, gamma=0.1)
         return self.classifier
 
@@ -158,11 +157,11 @@ class SVR_RBF(Classifier):
 
 class SVR_polynomial(Classifier):
 
-    def __init__(self, classifier_type):
-        super(Linear_regression, self),__inint__(classifier_type)
+    def __init__(self):
+        super(Linear_regression, self),__inint__()
 
 
-    def instanciate(self, classifier_type):
+    def instanciate(self):
         self.classifier = SVR(kernel='poly', C=1e3, degree=2)
         return self.classifier
 
@@ -183,11 +182,11 @@ class SVR_polynomial(Classifier):
 
 class kernel_ridge(Classifier):
 
-    def __init__(self, classifier_type):
-        super(Linear_regression, self),__inint__(classifier_type)
+    def __init__(self):
+        super(Linear_regression, self),__inint__()
 
 
-    def instanciate(self, classifier_type):
+    def instanciate(self):
         self.classifier = KernelRidge(alpha=1.0)
         return self.classifier
 
