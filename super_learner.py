@@ -16,23 +16,29 @@ def evaluation_error(learner, test_X_data, test_y_data):
     return mean_squared_error(test_y_data, pred_y_data)
 
 
-def get_learner_instance(learner_name):
+def get_learner_instance(learner_name, neighbors_num):
 
     # Some input parameters are hard coded, you might need to change it
     if learner_name == 'linear_regression':
-        return linear_model.LinearRegression() # Create linear regression object
+        return  Linear_regression()# Create linear regression object
 
     elif learner_name == 'SVR_RBF':
-        return SVR(kernel='rbf', C=1e3, gamma=0.1)
+        return SVR_RBF()
 
     elif learner_name == 'SVR_linear':
-        return SVR(kernel='linear', C=1e3)
+        return SVR_linear()
 
     elif learner_name == 'SVR_polynomial':
-        return SVR(kernel='poly', C=1e3, degree=2)
+        return SVR_polynomial()
 
     elif learner_name == 'kernel_ridge':
-        return KernelRidge(alpha=1.0)
+        return kernel_ridge() 
+
+    elif learner_name == 'KNeighbors_regressor':
+        return KNeighbors_regressor(neighbors_num) 
+
+    elif learner_name == 'Decision_tree_regressor':
+        return Decision_tree_regressor() 
 
     else:
         print('Error: The requested machine learning algorithm is not defined!')
@@ -190,6 +196,8 @@ if __name__ == '__main__':
     k_fold = 5
     learner_name = 'SVR_polynomial'
     skipping_thresh_value = 0.3
+    neighbor_num = 5
+
 
     #Read input
     df = c_iscore.read_file(f_addr)
