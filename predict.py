@@ -175,6 +175,7 @@ if __name__ == '__main__':
     error_range = 0.0001
     k_fold = 5
     learner_name = 'SVR_polynomial'
+    thresh_value = 0.3
 
     #Read input
     df = c_iscore.read_file(f_addr)
@@ -188,7 +189,6 @@ if __name__ == '__main__':
     X_data = df[columns]
     observed_y_data = df[target_feature_name.replace('dummy', '')]
     predict_y_data = learner.predict(X_data)
-    thresh_value = 0.3
     
     # Print Information
     print()
