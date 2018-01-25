@@ -21,7 +21,7 @@ def get_learner_instance(learner_name, neighbors_num):
 
     # Some input parameters are hard coded, you might need to change it
     if learner_name == classifier.Classifier_type.LINEAR_REGRESSION:
-        return classifier.LinearRegression()  # Create linear regression object
+        return classifier.Linear_regression()  # Create linear regression object
 
     elif learner_name == classifier.Classifier_type.SVR_RBF:
         return classifier.SVR_RBF()
@@ -33,10 +33,10 @@ def get_learner_instance(learner_name, neighbors_num):
         return classifier.SVR_polynomial()
 
     elif learner_name == classifier.Classifier_type.KERNEL_RIDGE:
-        return classifier.KernelRidge()
+        return classifier.Kernel_ridge()
 
     elif learner_name == classifier.Classifier_type.KNEIGHBORS_REGRESSOR:
-        return classifier.KNeighborsRegressor(neighbors_num)
+        return classifier.KNeighbors_regressor(neighbors_num)
 
     elif learner_name == classifier.Classifier_type.DECISION_TREE_REGRESSOR:
         return classifier.Decision_tree_regressor()

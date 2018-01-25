@@ -1,7 +1,7 @@
 from enum import Enum
 import abc
 from sklearn.neighbors import KNeighborsRegressor
-from sklearn import model_selection, linear_model
+from sklearn.linear_model import LinearRegression
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
@@ -46,13 +46,13 @@ class Classifier:
         return True
 
 
-class LinearRegression(Classifier):
+class Linear_regression(Classifier, LinearRegression):
     
     def __init__(self):
-        super(LinearRegression, self).__init__()
+        super(Linear_regression, self).__init__()
 
     def instantiate(self):
-        self.classifier = linear_model.LinearRegression()  # Create linear regression object
+        self.classifier = LinearRegression()  # Create linear regression object
         return self.classifier
 
     def represent(self):
@@ -64,15 +64,14 @@ class LinearRegression(Classifier):
         return [coef, intercept]
 
 
-
-class KNeighborsRegressor(Classifier):
+class KNeighbors_regressor(Classifier, KNeighborsRegressor):
     
     def __init__(self, neighbors_num):
-        super(KNeighborsRegressor, self).__init__()
+        super(KNeighbors_regressor, self).__init__()
         self.neighbors_num = neighbors_num
     
     def instantiate(self):
-        self.classifier = KNeighborsRegressor(n_neighbors = self.neighbors_num)
+        self.classifier = KNeighborsRegressor(n_neighbors=self.neighbors_num)
         return self.classifier
     
     
@@ -83,8 +82,7 @@ class KNeighborsRegressor(Classifier):
         return [representation]
 
 
-
-class Decision_tree_regressor(Classifier):
+class Decision_tree_regressor(Classifier, DecisionTreeRegressor):
     
     def __init__(self):
         super(Decision_tree_regressor, self).__init__()
@@ -107,8 +105,7 @@ class Decision_tree_regressor(Classifier):
         return [feature_importances, intercept, n_features, n_outputs, tree]
 
 
-
-class SVR_linear(Classifier):
+class SVR_linear(Classifier, SVR):
 
     def __init__(self):
         super(SVR_linear, self).__init__()
@@ -132,8 +129,7 @@ class SVR_linear(Classifier):
         return [support, support_vectors, dual_coef, coef, intercept, sample_weight]
 
 
-
-class SVR_RBF(Classifier):
+class SVR_RBF(Classifier, SVR):
 
     def __init__(self):
         super(SVR_RBF, self).__init__()
@@ -156,7 +152,7 @@ class SVR_RBF(Classifier):
         return [support, support_vectors, dual_coef, intercept, sample_weight]
 
 
-class SVR_polynomial(Classifier):
+class SVR_polynomial(Classifier, SVR):
 
     def __init__(self):
         super(SVR_polynomial, self).__init__()
@@ -179,10 +175,10 @@ class SVR_polynomial(Classifier):
         return [support, support_vectors, dual_coef, intercept, sample_weight]
 
 
-class KernelRidge(Classifier):
+class Kernel_ridge(Classifier, KernelRidge):
 
     def __init__(self):
-        super(KernelRidge, self).__init__()
+        super(Kernel_ridge, self).__init__()
 
 
     def instantiate(self):
