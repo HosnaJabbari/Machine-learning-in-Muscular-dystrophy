@@ -53,7 +53,9 @@ def convert_normalized_to_discrete_equal_section(data_frame):
 
 def convert_normalized_to_discrete_equal_bin(df, bins_num):
 #    df = data_frame.copy()    
-    columns = df.columns
+    columns = df.columns.values
+ 
+    #print "Columns.value: ", df.columns.values
     for c in columns:
         temp_columns = []
         #temp_dict = {}
@@ -63,8 +65,9 @@ def convert_normalized_to_discrete_equal_bin(df, bins_num):
                 #if val not in temp_dict:
                     #temp_dict[val] = int(round(val * 10))
                 #temp_list.append(temp_dict[val])
+
             discrete_col, cutoff = discrete.discretize(temp_columns, bins_num) 
-            df[c] = pandas.DataFrame({c:discrete_col})
+            df[c] = pandas.DataFrame({c: discrete_col})
     return df
 
 
