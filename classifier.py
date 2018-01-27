@@ -69,7 +69,7 @@ class Linear_regression(Classifier, LinearRegression):
 class KNeighbors_regressor(Classifier, KNeighborsRegressor):
     
     def __init__(self, neighbors_num):
-        KNeighborsRegressor.__init__(self, n_neighbors=self.neighbors_num)
+        KNeighborsRegressor.__init__(self, n_neighbors=neighbors_num)
         #super(KNeighbors_regressor, self).__init__(*args, **kwargs)
         self.neighbors_num = neighbors_num
     

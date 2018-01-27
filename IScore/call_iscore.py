@@ -5,6 +5,8 @@ import itertools
 import numpy
 import string
 import equal_bin_discretization as discrete
+import sys
+import traceback
 
 #The values of each column should be between 0 and 1
 #def scale_up(in_list, up_value):
@@ -52,22 +54,30 @@ def convert_normalized_to_discrete_equal_section(data_frame):
 
 
 def convert_normalized_to_discrete_equal_bin(df, bins_num):
-#    df = data_frame.copy()    
+#    df = data_frame.copy()
     columns = df.columns.values
- 
-    #print "Columns.value: ", df.columns.values
-    for c in columns:
+    index_list = df.index.values
+    for col in columns:
+        #print(df[c])
         temp_columns = []
-        #temp_dict = {}
-        if type(df[c].values[0]) == type(numpy.float64(1.4)):#1.4 is just a random number
-            for val in df[c].values:
-                temp_columns.append(int(round(val * 10)))
-                #if val not in temp_dict:
-                    #temp_dict[val] = int(round(val * 10))
-                #temp_list.append(temp_dict[val])
 
-            discrete_col, cutoff = discrete.discretize(temp_columns, bins_num) 
-            df[c] = pandas.DataFrame({c: discrete_col})
+        if type(df[col].values[0]) == type(numpy.float64(1.4)):#1.4 is just a random number
+            # print "Original: ", df[col]
+            for val in df[col].values:
+                new_val = int(round(val * 10))
+                temp_columns.append(new_val)
+
+            discrete_col, cutoff = discrete.discretize(temp_columns, bins_num)
+            for i in xrange(len(index_list)):
+                df.at[index_list[i], col] = discrete_col[i]
+
+            # if debug:
+            #     print "After discretize: len:", len(discrete_col), discrete_col
+            #     print "data frame index: ", df.index.values
+            #
+            # ##df[c] = pandas.DataFrame({c: discrete_col})
+            # if debug:
+            #     print "After assignment: len: ", len(df[col]), df[col]
     return df
 
 
@@ -141,8 +151,8 @@ def get_iscore(df, feature_sample, granularity_num, target_feature_name):
             #temp_counter += 1
         if len(cl) != 0:
             avg = float(temp)/len(cl)
-        cells_avg[key]= avg
-    
+        cells_avg[key] = avg
+
     return isc.compute_iscore(target_values, cells_avg)
 
 
@@ -150,7 +160,9 @@ def get_iscore(df, feature_sample, granularity_num, target_feature_name):
 def BDA(df, initial_features_sample, granularity_num, target_feature_name, error_range):
     #global_max_iscore = -float('Inf')
     #global_max_subset = []
+
     global_max_iscore = get_iscore(df, initial_features_sample, granularity_num, target_feature_name)
+
     global_max_subset = [initial_features_sample]
     sample_star = initial_features_sample
     
@@ -172,7 +184,8 @@ def BDA(df, initial_features_sample, granularity_num, target_feature_name, error
 #            print '\n', iscore, 'local_sample: len(',len(local_sample), ')', local_sample
             if abs(iscore - local_max_iscore) <= error_range:
                 local_max_subset.append(local_sample)
-            elif iscore - local_max_iscore > error_range:
+            #elif iscore - local_max_iscore > error_range:
+            else:
                 local_max_iscore = iscore
                 local_max_subset = [local_sample]
 #                print '\n------------------------------------\n', local_max_iscore, 'local_max:', local_max_subset, '\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n'
@@ -181,7 +194,7 @@ def BDA(df, initial_features_sample, granularity_num, target_feature_name, error
         sample_star = local_max_subset[-1]
        
         #Keep the best I-Score
-        print local_max_iscore, global_max_iscore, abs(local_max_iscore - global_max_iscore)
+        print "local_max_iscore: ", local_max_iscore, "global_max_iscore: ", global_max_iscore, "difference: ", abs(local_max_iscore - global_max_iscore)
         if abs(local_max_iscore - global_max_iscore) <= error_range:
             global_max_subset += local_max_subset
         elif local_max_iscore - global_max_iscore > error_range:
@@ -246,22 +259,45 @@ def BDA(df, initial_features_sample, granularity_num, target_feature_name, error
 def feature_selection(data_frame, target_feature_name, initial_subset_len, bins_num, error_range, debug=False):
     max_iscore = -float('Inf')
     max_subsets = []
-    df = convert_nominal_to_int(data_frame)
+    # We copy the data_frame. Since the train data combination is different every
+    # round, the discritization will be different and the changes remain in the
+    # data frame (that's why we copy).
+    df = data_frame.copy()
+
+    df = convert_nominal_to_int(df)
+
+
     df = convert_normalized_to_discrete_equal_bin(df, bins_num)
+
+
+
+
+
+
+
 
     #Standard columns' name: starts with no number of special characters
     temp = {}
     for name in df.columns:
         temp[name] = correct_name(name)
-    df = df.rename(columns = temp)
+    df = df.rename(columns=temp)
 
-    #Remove target column for creating the feature sets
-    df2 = df.copy(deep=True)
-######Check is the drop function creats a copy of df2 or use aliasing???
-    df2 = df2.drop(target_feature_name, 1)#where 1 is the axis number (0 for rows and 1 for columns)
-    all_subsets = get_all_initial_subsets(df2.columns, initial_subset_len)
+
+    # #Remove target column for creating the feature sets
+    # df2 = df.copy(deep=True)
+    # ######Check is the drop function creats a copy of df2 or use aliasing???
+    # df2 = df2.drop(target_feature_name, 1)  # where 1 is the axis number (0 for rows and 1 for columns)
+    column_lable_list = df.columns.values.tolist()
+    #column_lable_list = [str(i) for i in df.columns.values.tolist()]
+    if debug:
+        print "target_feature_name: ", target_feature_name
+        print column_lable_list.remove(target_feature_name)
+        print "column_lable_list: ", column_lable_list
+
+    all_subsets = get_all_initial_subsets(column_lable_list, initial_subset_len)
+
+    # all_subsets = get_all_initial_subsets(df2.columns, initial_subset_len)
 #    all_subsets = [df2.columns]
-
 
     count = 0
     total_num = len(all_subsets)

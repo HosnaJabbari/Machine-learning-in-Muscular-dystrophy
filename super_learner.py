@@ -53,18 +53,29 @@ def learn(X_dependent_data, y_indep_data, learner_name, neighbors_num):
     #print(columns)
     learner = get_learner_instance(learner_name, neighbors_num)
     # Train the model using the training sets
+
+
+   # X_dependent_data = X_dependent_data.astype(np.float64)
+    #print(X_dependent_data)
+    #print()
+    #print(y_indep_data)
+    #y_indep_data = y_indep_data.apply(pandas.to_numeric)
+    #X_dependent_data = X_dependent_data.apply(pandas.to_numeric)
+
+    # fit() deos internal to_float() conversion. So, please change all the non-degit strings in data to
+    # a corresponding digit
     learner.fit(X_dependent_data, y_indep_data)
     return learner
 
 
 def iscore_handler(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval):
-    # We copy the data_frame. Since the train data combination is different every 
-    # round, the discritization will be different and the changes remain in the 
-    # data frame (that's why we copy).
-    df_cp = data_frame.copy()            
+    # # We copy the data_frame. Since the train data combination is different every
+    # # round, the discritization will be different and the changes remain in the
+    # # data frame (that's why we copy).
+    # df_cp = data_frame.copy()
 
-    df = c_iscore.convert_normalized_to_discrete_equal_bin(df_cp, bins_num)  # I-Score works only with descrete values
-    max_score_subsets = c_iscore.feature_selection(df, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)  # TODO check if the feature selection excludes the target column from the dependant column
+#    df = c_iscore.convert_normalized_to_discrete_equal_bin(df_cp, bins_num)  # I-Score works only with descrete values
+    max_score_subsets = c_iscore.feature_selection(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)  # TODO check if the feature selection excludes the target column from the dependant column
     return max_score_subsets    
 
 def get_dependent_data(df, feature_set):
@@ -161,7 +172,7 @@ def SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bin
     for i in xrange(len(partitions)):
         test_df = partitions[i]
         train_df = pandas.concat(partitions[:i] + partitions[i+1:])
-        
+
         tmp_learner, tmp_features = super_learner(train_df, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num)
         
         test_X_data = get_dependent_data(test_df, tmp_features)
@@ -201,13 +212,12 @@ def calculate_accuracy(observed_list, predict_list, thresh_value):
 
 if __name__ == '__main__':
     # Initialization
-    f_addr = '/home/seyedmah/Desktop/normalized_data_Jan10.xlsx'
+    f_addr = '/home/seyedmah/Desktop/normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1).xlsx'
     target_feature_name = 'skip_percentage'
     initial_subset_len = 55 # can be set to any number, we set it to all number of features
     bins_num = 11  # It is fixed according to convert_normalized_to_discrete function
     iscore_confidence_interval = 0.0001
     k_fold = 5
-    learner_name = 'SVR_polynomial'
     skipping_thresh_value = 0.3
     neighbors_num = 5
     thresh_value = 0.3
@@ -243,4 +253,4 @@ if __name__ == '__main__':
     x_threshold_line = [thresh_value for i in range(0, len(x_thresh))]
     y_threshold_line = [thresh_value for i in range(0, len(y_thresh))]
     x_axis_len = int(math.ceil(max(predict_y_data)))
-    t= np.arange(0.0, x_axis_len, step) 
+    t = np.arange(0.0, x_axis_len, step)
