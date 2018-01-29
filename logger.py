@@ -9,7 +9,7 @@ class Logger:
             print "A log file is already created named: ", Logger.log_file
 
     def log(self, message):
-        Logger.log_file.write(message)
+        Logger.log_file.write(message + '\n')
         Logger.log_file.flush()
 
     def __del__(self):

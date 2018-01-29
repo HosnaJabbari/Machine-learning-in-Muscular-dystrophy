@@ -1,13 +1,9 @@
 import IScore.call_iscore as c_iscore
+import logger
 import classifier
-import IScore.iscore as iscore
-from sklearn import model_selection, linear_model
-from sklearn.kernel_ridge import KernelRidge
-from sklearn.svm import SVR
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error
 import pandas
 import numpy as np
-import matplotlib.pyplot as plt
 import math
 
 
@@ -135,14 +131,17 @@ def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num,
 
     best_learner_name = ''
     best_feature_set = []
+    min_error = float('Inf')
 
     for learner_name in classifier.ClassifierType:
-        min_error = float('Inf')
+        logger.log("Start: " + str(learner_name))
+
         avg_error = 0
         tmp_feature_set = []  # HOW CAN WE SAY WHICH tmp_feature_set OF EACH FOLD SHOULD BE THE REPRESENTATIVE OF
         # all k folds?
         best_tmp_error = float('Inf')
         best_tmp_set = []
+        logger.log("Doing feature selection based on cross-validation")
         for i in xrange(len(partitions)):
             test_df = partitions[i]
             train_df = pandas.concat(partitions[:i] + partitions[i+1:])
@@ -156,13 +155,19 @@ def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num,
                 best_tmp_set = tmp_feature_set
 
         avg_error /= len(partitions)
+        logger.log("Selected features for " + str(learner_name) + ": " + str(best_tmp_set))
+        logger.log("Average error: " + str(avg_error))
         if avg_error < min_error:
             best_learner_name = learner_name
             best_feature_set = best_tmp_set
+    logger.log("Best learner of all is: " + str(best_learner_name))
+    logger.log("Best feature set of all: ", best_feature_set)
+    logger.log("Min error of the best learner: " + str(min_error))
+
     X_dependent_data = get_dependent_data(data_frame, best_feature_set)
     y_indep_data = get_independent_data(data_frame, target_feature_name)
     best_learner = learn(X_dependent_data, y_indep_data, best_learner_name, neighbors_num)
-    
+
     return best_learner, best_feature_set
 
 # External Cross-validation
@@ -187,8 +192,9 @@ def SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bin
 def apply_super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num):
 
     learning_model, features = super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num)
+    logger.log("Best learner details: ", learning_model)
     error = SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num)
-
+    logger.log("Error of best learner (based on cross-validation): ", error)
     return learning_model, features, error
 
 
@@ -211,7 +217,11 @@ def calculate_accuracy(observed_list, predict_list, thresh_value):
 
 
 if __name__ == '__main__':
+    global logger
+    logger = logger.Logger("log.txt")
+
     # Initialization
+    logger.log('Initialization...')
     f_addr = '/home/seyedmah/Desktop/normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1).xlsx'
     target_feature_name = 'skip_percentage'
     initial_subset_len = 55 # can be set to any number, we set it to all number of features
@@ -223,9 +233,11 @@ if __name__ == '__main__':
     thresh_value = 0.3
 
     # Read input
+    logger.log('Read input...')
     data_frame = c_iscore.read_file(f_addr)
 
     # Learn ML model
+    logger.log('Learn ML Model...')
     learning_model, avg_error, feature_subset = apply_super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, k_fold, neighbors_num)
     # Predict
     X_data = get_dependent_data(data_frame, feature_subset)
@@ -234,17 +246,22 @@ if __name__ == '__main__':
 
     # Print Information
     print()
+    logger.log('\nMachine learning model:', learning_model)
     print('Machine learning model:', learning_model)
+    logger.log('Features: ', feature_subset)
     print('Features: ', feature_subset)  # TODO check if the order of the features are the same as the coefficients
-#    print('Coefficients: ', learner.coef_)
-#    print('Intercept:', learning_model.intercept_)
+    logger.log('Mean squared error:%.2f' % avg_error)
     print('Mean squared error:%.2f' % avg_error)
-#    print(learner.get_params(deep=True))
 
+    logger.log('input features:', X_data)
     print('input features:', X_data)
+    logger.log('Observed: ', observed_y_data.as_matrix())
     print('Observed: ', observed_y_data.as_matrix())
+    logger.log('Predicted: ', predict_y_data)
     print('Predicted: ', predict_y_data)
-    print 'Accuracy: ', calculate_accuracy(observed_y_data, predict_y_data, thresh_value)
+    logger.log()
+    print('Accuracy: ', calculate_accuracy(observed_y_data, predict_y_data, thresh_value))
+    logger.log('Accuracy: ', calculate_accuracy(observed_y_data, predict_y_data, thresh_value))
 
     # Plot
     step = 0.01

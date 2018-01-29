@@ -21,7 +21,8 @@ def read_file(f_addr):
 
 ##########################Test if df has changed at the end (i.e., columns is not a view only)
 def convert_nominal_to_int(df):  # TODO Should be modified to change the elemenst like: convert_normalized_to_discrete_equal_bin() function
-    columns = df.columns
+    columns = df.columns.values
+    index_list = df.index.values
     for c in columns:
         temp_list = []
         temp_dict = {}
@@ -32,24 +33,10 @@ def convert_nominal_to_int(df):  # TODO Should be modified to change the elemens
                     temp_dict[val] = count
                     count += 1
                 temp_list.append(temp_dict[val])
-            df[c] = pandas.DataFrame({c: temp_list})
-    return df
 
-
-##########################Test if df has changed at the end (i.e., columns is not a view only)
-#Gives us the ganularity of 11
-def convert_normalized_to_discrete_equal_section(data_frame):  # TODO Should be modified to change the elemenst like: convert_normalized_to_discrete_equal_bin() function
-    df = data_frame.copy()
-    columns = df.columns
-    for c in columns:
-        temp_list = []
-        temp_dict = {}
-        if type(df[c].values[0]) == type(numpy.float64(1.4)):#1.4 is just a random number
-            for val in df[c].values:
-                if val not in temp_dict:
-                    temp_dict[val] = int(round(val * 10))
-                temp_list.append(temp_dict[val])
-            df[c] = pandas.DataFrame({c:temp_list})
+            for i in xrange(len(index_list)):
+                df.at[index_list[i], c] = temp_list[i]
+            #df[c] = pandas.DataFrame({c: temp_list})
     return df
 
 
@@ -78,6 +65,23 @@ def convert_normalized_to_discrete_equal_bin(df, bins_num):
             # ##df[c] = pandas.DataFrame({c: discrete_col})
             # if debug:
             #     print "After assignment: len: ", len(df[col]), df[col]
+    return df
+
+
+##########################Test if df has changed at the end (i.e., columns is not a view only)
+#Gives us the ganularity of 11
+def convert_normalized_to_discrete_equal_section(data_frame):  # TODO Should be modified to change the elemenst like: convert_normalized_to_discrete_equal_bin() function
+    df = data_frame.copy()
+    columns = df.columns
+    for c in columns:
+        temp_list = []
+        temp_dict = {}
+        if type(df[c].values[0]) == type(numpy.float64(1.4)):#1.4 is just a random number
+            for val in df[c].values:
+                if val not in temp_dict:
+                    temp_dict[val] = int(round(val * 10))
+                temp_list.append(temp_dict[val])
+            df[c] = pandas.DataFrame({c:temp_list})
     return df
 
 
