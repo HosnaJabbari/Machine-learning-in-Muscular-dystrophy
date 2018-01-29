@@ -20,29 +20,30 @@ def evaluation_error(learner, test_X_data, test_y_data):
 def get_learner_instance(learner_name, neighbors_num):
 
     # Some input parameters are hard coded, you might need to change it
-    if learner_name == classifier.Classifier_type.LINEAR_REGRESSION:
+    if learner_name == classifier.ClassifierType.LINEAR_REGRESSION:
         return classifier.Linear_regression()  # Create linear regression object
 
-    elif learner_name == classifier.Classifier_type.SVR_RBF:
+    elif learner_name == classifier.ClassifierType.SVR_RBF:
         return classifier.SVR_RBF()
 
-    elif learner_name == classifier.Classifier_type.SVR_LINEAR:
+    elif learner_name == classifier.ClassifierType.SVR_LINEAR:
         return classifier.SVR_linear()
 
-    elif learner_name == classifier.Classifier_type.SVR_POLYNOMIAL:
+    elif learner_name == classifier.ClassifierType.SVR_POLYNOMIAL:
         return classifier.SVR_polynomial()
 
-    elif learner_name == classifier.Classifier_type.KERNEL_RIDGE:
+    elif learner_name == classifier.ClassifierType.KERNEL_RIDGE:
         return classifier.Kernel_ridge()
 
-    elif learner_name == classifier.Classifier_type.KNEIGHBORS_REGRESSOR:
+    elif learner_name == classifier.ClassifierType.KNEIGHBORS_REGRESSOR:
         return classifier.KNeighbors_regressor(neighbors_num)
 
-    elif learner_name == classifier.Classifier_type.DECISION_TREE_REGRESSOR:
+    elif learner_name == classifier.ClassifierType.DECISION_TREE_REGRESSOR:
         return classifier.Decision_tree_regressor()
 
     else:
         print('Error: The requested machine learning algorithm is not defined!')
+        print('Requested learner name: ', learner_name)
         return None
 
 
@@ -133,10 +134,9 @@ def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num,
     partitions = partition(data_frame, k_fold)
 
     best_learner_name = ''
-
     best_feature_set = []
-    #learner_types = [t.value for t in Classifier_type]
-    for learner_name in classifier.Classifier_type:
+
+    for learner_name in classifier.ClassifierType:
         min_error = float('Inf')
         avg_error = 0
         tmp_feature_set = []  # HOW CAN WE SAY WHICH tmp_feature_set OF EACH FOLD SHOULD BE THE REPRESENTATIVE OF

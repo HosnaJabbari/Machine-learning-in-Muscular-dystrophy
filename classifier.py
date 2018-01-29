@@ -7,7 +7,7 @@ from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
 
 
-class Classifier_type(Enum):
+class ClassifierType(Enum):
     LINEAR_REGRESSION = 1
     SVR_RBF = 2
     SVR_LINEAR = 3
