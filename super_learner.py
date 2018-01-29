@@ -5,6 +5,7 @@ from sklearn.metrics import mean_squared_error
 import pandas
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 
 def evaluation_error(learner, test_X_data, test_y_data):
@@ -259,11 +260,13 @@ if __name__ == '__main__':
     print('Observed: ', observed_y_data.as_matrix())
     logger.log('Predicted: ', predict_y_data)
     print('Predicted: ', predict_y_data)
-    logger.log()
-    print('Accuracy: ', calculate_accuracy(observed_y_data, predict_y_data, thresh_value))
     logger.log('Accuracy: ', calculate_accuracy(observed_y_data, predict_y_data, thresh_value))
+    accuracy = calculate_accuracy(observed_y_data, predict_y_data, thresh_value)
+    print('Accuracy: ', accuracy)
+
 
     # Plot
+    logger.log("Plot the diagram...")
     step = 0.01
     x_thresh = np.arange(-0.1, 1, step)
     y_thresh = np.arange(0.0, 1, step)
@@ -271,3 +274,16 @@ if __name__ == '__main__':
     y_threshold_line = [thresh_value for i in range(0, len(y_thresh))]
     x_axis_len = int(math.ceil(max(predict_y_data)))
     t = np.arange(0.0, x_axis_len, step)
+
+    plt.plot(predict_y_data, observed_y_data, 'go', t, t, 'r-', x_thresh, x_threshold_line, 'b--', y_threshold_line,
+             y_thresh, 'b--')
+    #    plt.title(testName + ' ($R^2$: ' + "{0:.3f}".format(R2) + ")", fontsize = 14)
+    plt.xlabel('Predicted Skip(%)', fontsize=12, weight='bold')
+    plt.ylabel('Observed Skip(%)', fontsize=12, weight='bold')
+    plt.legend(loc='upper left', bbox_to_anchor=(0, 1.0), fancybox=True, shadow=True, fontsize=10)
+    plt.subplots_adjust(left=0.2, right=0.9, bottom=0.05, top=0.97, wspace=0.15, hspace=0.3)
+    plt.grid(True)
+    logger.log("Save the diagram as .pdf and .png")
+    plt.savefig('with_learner_accuracy' + str(accuracy) + '.png', bbox_inches='tight')
+    plt.savefig('with_learner_accuracy' + str(accuracy) + '.pdf', bbox_inches='tight')
+    plt.show()
