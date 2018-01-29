@@ -144,12 +144,15 @@ def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num,
         best_tmp_set = []
         logger.log("Doing feature selection based on cross-validation")
         for i in xrange(len(partitions)):
+            logger.log("fold no. " + str(i))
             test_df = partitions[i]
             train_df = pandas.concat(partitions[:i] + partitions[i+1:])
             max_score_subsets = iscore_handler(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)
 
             tmp_feature_set, tmp_learner, tmp_error = find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name, neighbors_num)
-                
+
+            logger.log("Fold error: " + str(tmp_error))
+            logger.loog("Fold selected features: ", tmp_feature_set)
             avg_error += tmp_error
             if tmp_error < best_tmp_error:  # We keep the set with minimum error among all the k-fold
                 best_tmp_error = tmp_error
@@ -173,6 +176,7 @@ def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num,
 
 # External Cross-validation
 def SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num):
+    logger.log("Doing cross-validation")
     partitions = partition(data_frame, k_fold)
     avg_error = 0
     for i in xrange(len(partitions)):
