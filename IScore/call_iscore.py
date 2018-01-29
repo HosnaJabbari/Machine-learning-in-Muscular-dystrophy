@@ -269,16 +269,7 @@ def feature_selection(data_frame, target_feature_name, initial_subset_len, bins_
     df = data_frame.copy()
 
     df = convert_nominal_to_int(df)
-
-
     df = convert_normalized_to_discrete_equal_bin(df, bins_num)
-
-
-
-
-
-
-
 
     #Standard columns' name: starts with no number of special characters
     temp = {}
@@ -298,6 +289,7 @@ def feature_selection(data_frame, target_feature_name, initial_subset_len, bins_
         print column_lable_list.remove(target_feature_name)
         print "column_lable_list: ", column_lable_list
 
+    column_lable_list.remove(target_feature_name)
     all_subsets = get_all_initial_subsets(column_lable_list, initial_subset_len)
 
     # all_subsets = get_all_initial_subsets(df2.columns, initial_subset_len)
