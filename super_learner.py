@@ -230,13 +230,13 @@ if __name__ == '__main__':
 
     now = datetime.datetime.now()
     date = now.strftime("%Y-%m-%d")
-    logger = logger.Logger("log.txt")
+    logger = logger.Logger("log_" + str(date) + ".txt")
 
     # Initialization
     logger.log('Initialization...')
     f_addr = '/home/seyedmah/Desktop/normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1).xlsx'
     target_feature_name = 'skip_percentage'
-    initial_subset_len = 55 # can be set to any number, we set it to all number of features
+    initial_subset_len = 55  # can be set to any number, we set it to all number of features
     bins_num = 11  # It is fixed according to convert_normalized_to_discrete function
     iscore_confidence_interval = 0.0001
     k_fold = 5
