@@ -225,7 +225,11 @@ def calculate_accuracy(observed_list, predict_list, thresh_value):
 
 
 if __name__ == '__main__':
+    import datetime
     global logger
+
+    now = datetime.datetime.now()
+    date = now.strftime("%Y-%m-%d")
     logger = logger.Logger("log.txt")
 
     # Initialization
@@ -254,21 +258,21 @@ if __name__ == '__main__':
 
     # Print Information
     print()
-    logger.log('\nMachine learning model:', learning_model)
+    logger.log('\nMachine learning model:' + str(learning_model))
     print('Machine learning model:', learning_model)
-    logger.log('Features: ', feature_subset)
+    logger.log('Features: ' + str(feature_subset))
     print('Features: ', feature_subset)  # TODO check if the order of the features are the same as the coefficients
-    logger.log('Mean squared error:%.2f' % avg_error)
+    logger.log('Mean squared error: ' + str(avg_error))
     print('Mean squared error:%.2f' % avg_error)
 
-    logger.log('input features:', X_data)
+    logger.log('input features:' + str(X_data))
     print('input features:', X_data)
-    logger.log('Observed: ', observed_y_data.as_matrix())
+    logger.log('Observed: ' + str(observed_y_data.as_matrix()))
     print('Observed: ', observed_y_data.as_matrix())
-    logger.log('Predicted: ', predict_y_data)
+    logger.log('Predicted: ' + str(predict_y_data))
     print('Predicted: ', predict_y_data)
-    logger.log('Accuracy: ', calculate_accuracy(observed_y_data, predict_y_data, thresh_value))
     accuracy = calculate_accuracy(observed_y_data, predict_y_data, thresh_value)
+    logger.log('Accuracy: ' + str(accuracy))
     print('Accuracy: ', accuracy)
 
 
