@@ -103,18 +103,20 @@ def find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_f
     best_learner = None
     min_error = float("inf")  # Assume errors are positive, otherwise we consider the absolute value
 
+    #target_col_name = target_feature_name.replace('dummy', '')
+    #y_indep_data = train_df[target_col_name]
+    y_indep_data = get_independent_data(train_df, target_feature_name)
+    # test_y_data = test_df[target_col_name]
+    test_y_data = get_independent_data(test_df, target_feature_name)
+
     for feature_set in max_score_subsets:
 #        cols = [i.replace('dummy', '') for i in feature_set]
 #        X_dependent_data = train_df[cols]
         X_dependent_data = get_dependent_data(train_df, feature_set)
-#        target_col_name = target_feature_name.replace('dummy', '')
-#        y_indep_data = train_df[target_col_name]
-        y_indep_data = get_independent_data(train_df, target_feature_name)
 
         #test_X_data = test_df[cols]
         test_X_data = get_dependent_data(test_df, feature_set)
-        #test_y_data = test_df[target_col_name]
-        test_y_data = get_independent_data(test_df, target_feature_name)
+
 
         learner = learn(X_dependent_data, y_indep_data, learner_name, neighbors_num)
         error = evaluation_error(learner, test_X_data, test_y_data)
@@ -152,7 +154,7 @@ def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num,
             tmp_feature_set, tmp_learner, tmp_error = find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name, neighbors_num)
 
             logger.log("Fold error: " + str(tmp_error))
-            logger.loog("Fold selected features: ", tmp_feature_set)
+            logger.log("Fold selected features: " + str(tmp_feature_set))
             avg_error += tmp_error
             if tmp_error < best_tmp_error:  # We keep the set with minimum error among all the k-fold
                 best_tmp_error = tmp_error
@@ -164,8 +166,9 @@ def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num,
         if avg_error < min_error:
             best_learner_name = learner_name
             best_feature_set = best_tmp_set
+            min_error = avg_error
     logger.log("Best learner of all is: " + str(best_learner_name))
-    logger.log("Best feature set of all: ", best_feature_set)
+    logger.log("Best feature set of all: " + str(best_feature_set))
     logger.log("Min error of the best learner: " + str(min_error))
 
     X_dependent_data = get_dependent_data(data_frame, best_feature_set)
@@ -197,9 +200,9 @@ def SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bin
 def apply_super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num):
 
     learning_model, features = super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num)
-    logger.log("Best learner details: ", learning_model)
+    logger.log("Best learner details: " + str(learning_model))
     error = SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num)
-    logger.log("Error of best learner (based on cross-validation): ", error)
+    logger.log("Error of best learner (based on cross-validation): " + str(error))
     return learning_model, features, error
 
 
