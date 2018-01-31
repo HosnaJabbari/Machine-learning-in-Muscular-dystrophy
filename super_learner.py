@@ -4,14 +4,18 @@ import classifier
 from sklearn.metrics import mean_squared_error
 import pandas
 import numpy as np
+from sklearn import model_selection
 import math
 import matplotlib.pyplot as plt
+
+from sklearn.metrics import make_scorer
 
 
 def evaluation_error(learner, test_X_data, test_y_data):
     #classifier = learn(train_df, target_feature_name, temp_feature_subset, learner_name, neighbors_num)
     pred_y_data = learner.predict(test_X_data)
     return mean_squared_error(test_y_data, pred_y_data)
+    #return mean_squared_error(learner, test_X_data, test_y_data)
 
 
 def get_learner_instance(learner_name, neighbors_num):
@@ -45,21 +49,8 @@ def get_learner_instance(learner_name, neighbors_num):
 
 
 def learn(X_dependent_data, y_indep_data, learner_name, neighbors_num):
-#    columns = [i.replace('dummy', '') for i in feature_subset]
-#    X_dependent_data = df[columns]
-#    y_indep_data = df[target_feature_name.replace('dummy', '')]
-    #print(columns)
     learner = get_learner_instance(learner_name, neighbors_num)
     # Train the model using the training sets
-
-
-   # X_dependent_data = X_dependent_data.astype(np.float64)
-    #print(X_dependent_data)
-    #print()
-    #print(y_indep_data)
-    #y_indep_data = y_indep_data.apply(pandas.to_numeric)
-    #X_dependent_data = X_dependent_data.apply(pandas.to_numeric)
-
     # fit() deos internal to_float() conversion. So, please change all the non-degit strings in data to
     # a corresponding digit
     learner.fit(X_dependent_data, y_indep_data)
@@ -67,12 +58,6 @@ def learn(X_dependent_data, y_indep_data, learner_name, neighbors_num):
 
 
 def iscore_handler(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval):
-    # # We copy the data_frame. Since the train data combination is different every
-    # # round, the discritization will be different and the changes remain in the
-    # # data frame (that's why we copy).
-    # df_cp = data_frame.copy()
-
-#    df = c_iscore.convert_normalized_to_discrete_equal_bin(df_cp, bins_num)  # I-Score works only with descrete values
     max_score_subsets = c_iscore.feature_selection(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)  # TODO check if the feature selection excludes the target column from the dependant column
     return max_score_subsets    
 
@@ -98,25 +83,29 @@ def partition(df, num_partition):
     return dfs
 
 
+def mean_squared_error_scorer():
+    return make_scorer(mean_squared_error)
+
+
+def feature_cross_validation(learner, X_data, y_data, k_fold):
+    # K-FOLD CROSS VALIDATION
+    scoring_metrics = ['neg_mean_squared_error']
+    result = model_selection.cross_validate(learner, X_data, y_data, cv=k_fold, scoring=scoring_metrics)
+    #result = model_selection.cross_validate(learner, X_data, y_data, cv=k_fold, scoring=mean_squared_error_scorer)
+    return result
+
+
 def find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name, neighbors_num):
     best_feature_set = []
     best_learner = None
     min_error = float("inf")  # Assume errors are positive, otherwise we consider the absolute value
 
-    #target_col_name = target_feature_name.replace('dummy', '')
-    #y_indep_data = train_df[target_col_name]
     y_indep_data = get_independent_data(train_df, target_feature_name)
-    # test_y_data = test_df[target_col_name]
     test_y_data = get_independent_data(test_df, target_feature_name)
 
     for feature_set in max_score_subsets:
-#        cols = [i.replace('dummy', '') for i in feature_set]
-#        X_dependent_data = train_df[cols]
         X_dependent_data = get_dependent_data(train_df, feature_set)
-
-        #test_X_data = test_df[cols]
         test_X_data = get_dependent_data(test_df, feature_set)
-
 
         learner = learn(X_dependent_data, y_indep_data, learner_name, neighbors_num)
         error = evaluation_error(learner, test_X_data, test_y_data)
@@ -125,7 +114,35 @@ def find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_f
             best_learner = learner
             best_feature_set = feature_set
     return best_feature_set, best_learner, min_error
-        
+
+
+def find_best_features(df, target_feature_name, learner_name, initial_subset_len, bins_num,
+                                       iscore_confidence_interval, neighbors_num):
+    max_score_subsets = iscore_handler(df, target_feature_name, initial_subset_len, bins_num,
+                                       iscore_confidence_interval)
+    # K-FOLD CROSS VALIDATION to select the best feature among all candidate features
+    y_indep_data = get_independent_data(df, target_feature_name)
+
+    min_error = float('Inf')
+    min_subset = []
+    for subset in max_score_subsets:
+        X_dependent_data = get_dependent_data(df, subset)
+
+        learner = get_learner_instance(learner_name, neighbors_num)
+        result = feature_cross_validation(learner, X_dependent_data, y_indep_data, k_fold)
+
+        # Find the model with the minimum error
+        test_errors = result['test_neg_mean_squared_error']
+        #logger.log('test_errors: ' + str(test_errors))
+        #avg_error = sum([abs(e) for e in test_errors]) / float(len(test_errors))## Changed
+        avg_error = sum(test_errors) / float(len(test_errors))
+        #if avg_error < abs(min_error):## Changed
+        if abs(avg_error) < abs(min_error):
+            min_error = avg_error
+            min_subset = subset
+    #print 'min_error =', min_error, '\nmin_subset =', min_subset
+
+    return min_subset, min_error
 
 
 def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, k_fold, neighbors_num):
@@ -149,33 +166,52 @@ def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num,
             logger.log("fold no. " + str(i))
             test_df = partitions[i]
             train_df = pandas.concat(partitions[:i] + partitions[i+1:])
-            max_score_subsets = iscore_handler(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)
+            # max_score_subsets = iscore_handler(train_df, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)
 
-            tmp_feature_set, tmp_learner, tmp_error = find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name, neighbors_num)
+            #tmp_feature_set, tmp_learner, tmp_error = find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name, neighbors_num)
+            tmp_feature_set, dummy_error = find_best_features(train_df, target_feature_name, learner_name,
+                                                              initial_subset_len, bins_num, iscore_confidence_interval,
+                                                              neighbors_num)
 
+            # Learn and estimate based on the selected features (i.e., tmp_feature_set)
+            X_dependent_data = get_dependent_data(train_df, tmp_feature_set)
+            y_indep_data = get_independent_data(train_df, target_feature_name)
+            tmp_learner = learn(X_dependent_data, y_indep_data, learner_name, neighbors_num)
+
+            test_X_data = get_dependent_data(test_df, tmp_feature_set)
+            test_y_data = get_independent_data(test_df, target_feature_name)
+            # Predict
+            pred_y_data = tmp_learner.predict(test_X_data)
+            # Calculating error: mean_squared_error
+            tmp_error = mean_squared_error(test_y_data, pred_y_data)
+            print("temp_error: " + str(tmp_error))
             logger.log("Fold error: " + str(tmp_error))
             logger.log("Fold selected features: " + str(tmp_feature_set))
-            avg_error += tmp_error
-            if tmp_error < best_tmp_error:  # We keep the set with minimum error among all the k-fold
-                best_tmp_error = tmp_error
-                best_tmp_set = tmp_feature_set
+            avg_error += abs(tmp_error)
+            # if tmp_error < best_tmp_error:  # We keep the set with minimum error among all the k-fold
+            #     best_tmp_error = tmp_error
+            #     best_tmp_set = tmp_feature_set
 
         avg_error /= len(partitions)
-        logger.log("Selected features for " + str(learner_name) + ": " + str(best_tmp_set))
+        # logger.log("Selected features for " + str(learner_name) + ": " + str(best_tmp_set))
         logger.log("Average error: " + str(avg_error))
         if avg_error < min_error:
             best_learner_name = learner_name
-            best_feature_set = best_tmp_set
+            # best_feature_set = best_tmp_set
             min_error = avg_error
     logger.log("Best learner of all is: " + str(best_learner_name))
-    logger.log("Best feature set of all: " + str(best_feature_set))
     logger.log("Min error of the best learner: " + str(min_error))
 
-    X_dependent_data = get_dependent_data(data_frame, best_feature_set)
+    selected_feature_set, dummy_error = find_best_features(data_frame, target_feature_name, learner_name,
+                                                           initial_subset_len, bins_num, iscore_confidence_interval,
+                                                           neighbors_num)
+    logger.log("Best feature set of all: " + str(selected_feature_set))
+    X_dependent_data = get_dependent_data(data_frame, selected_feature_set)
     y_indep_data = get_independent_data(data_frame, target_feature_name)
     best_learner = learn(X_dependent_data, y_indep_data, best_learner_name, neighbors_num)
 
-    return best_learner, best_feature_set
+    return best_learner, selected_feature_set
+
 
 # External Cross-validation
 def SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num):
@@ -229,8 +265,8 @@ if __name__ == '__main__':
     global logger
 
     now = datetime.datetime.now()
-    date = now.strftime("%Y-%m-%d")
-    logger = logger.Logger("log_" + str(date) + ".txt")
+    date_time = now.strftime("%Y-%m-%d_%H:%M")
+    logger = logger.Logger("log_" + str(date_time) + ".txt")
 
     # Initialization
     logger.log('Initialization...')

@@ -8,10 +8,10 @@ from sklearn.tree import DecisionTreeRegressor
 
 
 class ClassifierType(Enum):
-    # LINEAR_REGRESSION = 1
-    # SVR_RBF = 2
-    # SVR_LINEAR = 3
-    # SVR_POLYNOMIAL = 4
+    LINEAR_REGRESSION = 1
+    SVR_RBF = 2
+    SVR_LINEAR = 3
+    SVR_POLYNOMIAL = 4
     KERNEL_RIDGE = 5
     KNEIGHBORS_REGRESSOR = 6
     DECISION_TREE_REGRESSOR = 7
