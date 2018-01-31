@@ -8,10 +8,10 @@ from sklearn.tree import DecisionTreeRegressor
 
 
 class ClassifierType(Enum):
-    LINEAR_REGRESSION = 1
-    SVR_RBF = 2
-    SVR_LINEAR = 3
-    SVR_POLYNOMIAL = 4
+    # LINEAR_REGRESSION = 1
+    # SVR_RBF = 2
+    # SVR_LINEAR = 3
+    # SVR_POLYNOMIAL = 4
     KERNEL_RIDGE = 5
     KNEIGHBORS_REGRESSOR = 6
     DECISION_TREE_REGRESSOR = 7
@@ -26,13 +26,6 @@ class Classifier:
         """"This init function must be called by the subclasses."""
         self.classifier = None
 
-#    @abc.abstractmethod
-#    def instantiate(self):
-#        """Get a valid classifier type and return an instance of that classifier (also the classifier should be assigned
-#         to self.classifier variable/property). Valid classifier types are defined in the Classifier_type enumeration
-#         class."""
-#        return
-         
     @abc.abstractmethod
     def represent(self):
         """First check if the classifier has been instantiated. Then, represent a classifier using the information
@@ -53,10 +46,6 @@ class Linear_regression(Classifier, LinearRegression):
         #super(Linear_regression, self).__init__(*args, **kwargs)  # Because we override the __init__ method, so you need
         #  to call the parent method if you want the parent behavior to happen
 
-    # def instantiate(self):
-    #     self.classifier = LinearRegression()  # Create linear regression object
-    #     return self.classifier
-
     def represent(self):
         if not self.isExist_classifier():
             return
@@ -69,14 +58,10 @@ class Linear_regression(Classifier, LinearRegression):
 class KNeighbors_regressor(Classifier, KNeighborsRegressor):
     
     def __init__(self, neighbors_num):
-        KNeighborsRegressor.__init__(self, n_neighbors=neighbors_num)
+        KNeighborsRegressor.__init__(self, n_neighbors=neighbors_num)  # default value in sciKit: n_neighbors=5
         #super(KNeighbors_regressor, self).__init__(*args, **kwargs)
         self.neighbors_num = neighbors_num
-    
-    # def instantiate(self):
-    #     self.classifier = KNeighborsRegressor(n_neighbors=self.neighbors_num)
-    #     return self.classifier
-    
+
     def represent(self):
         if not self.isExist_classifier():
             return
@@ -90,10 +75,6 @@ class Decision_tree_regressor(Classifier, DecisionTreeRegressor):
         DecisionTreeRegressor.__init__(self, random_state=0)
         #super(Decision_tree_regressor, self).__init__(*args, **kwargs)
 
-    # def instantiate(self):
-    #     self.classifier = DecisionTreeRegressor(random_state=0)
-    #     return self.classifier
-    
     def represent(self):
         if not self.isExist_classifier():
             return
@@ -111,10 +92,6 @@ class SVR_linear(Classifier, SVR):
     def __init__(self):
         SVR.__init__(self, kernel='linear', C=1e3)
         #super(SVR_linear, self).__init__(*args, **kwargs)
-
-    # def instantiate(self):
-    #     self.classifier = SVR(kernel='linear', C=1e3)
-    #     return self.classifier
 
     def represent(self):
         if not self.isExist_classifier():
@@ -135,11 +112,6 @@ class SVR_RBF(Classifier, SVR):
         SVR.__init__(self, kernel='rbf', C=1e3, gamma=0.1)
         #super(SVR_RBF, self).__init__(*args, **kwargs)
 
-
-    # def instantiate(self):
-    #     self.classifier = SVR(kernel='rbf', C=1e3, gamma=0.1)
-    #     return self.classifier
-
     def represent(self):
         if not self.isExist_classifier():
             return
@@ -159,11 +131,6 @@ class SVR_polynomial(Classifier, SVR):
         SVR.__init__(self, kernel='poly', C=1e3, degree=2)
         #super(SVR_polynomial, self).__init__(*args, **kwargs)
 
-
-    # def instantiate(self):
-    #     self.classifier = SVR(kernel='poly', C=1e3, degree=2)
-    #     return self.classifier
-
     def represent(self):
         if not self.isExist_classifier():
             return
@@ -179,13 +146,9 @@ class SVR_polynomial(Classifier, SVR):
 
 class Kernel_ridge(Classifier, KernelRidge):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         KernelRidge.__init__(self, alpha=1.0)
         #super(Kernel_ridge, self).__init__(*args, **kwargs)
-
-    # def instantiate(self):
-    #     self.classifier = KernelRidge(alpha=1.0)
-    #     return self.classifier
 
     def represent(self):
         if not self.isExist_classifier():
