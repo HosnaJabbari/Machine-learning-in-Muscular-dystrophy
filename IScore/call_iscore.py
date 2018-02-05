@@ -151,13 +151,12 @@ def get_iscore(df, feature_sample, granularity_num, target_feature_name):
         temp = 0
         #temp_counter = 0
         avg = 0
-        elem_count = 0
         for elem in cl:
             temp += getattr(elem, target_feature_name)
-            elem_count += 1
-        if len(cl) != 0:
+        cell_len = len(cl)
+        if cell_len != 0:
             avg = float(temp)/len(cl)
-        cells_avg[key] = (avg, elem_count)
+        cells_avg[key] = (avg, cell_len)
 
     return isc.compute_iscore(target_values, cells_avg)
 
@@ -228,7 +227,7 @@ def pick_max_elements_within_range(new_element, value, error_range, lower_bound=
 
 
 def sample_uniformly(samples_list, num):
-
+    return [samples_list[-1]]
     length = len(samples_list)
     # step = length//num
     step = num
@@ -335,8 +334,10 @@ def BDA(df, initial_features_sample, granularity_num, target_feature_name, error
         #Drop a variable (i.e., each sample has length of one less than the original)
         # sample_star = local_max_subset[-1][1]
         # sample_star = local_max_subset
-        # all_sample_stars = sample_uniformly(last_candidates, 10)
-        all_sample_stars = last_candidates
+        all_sample_stars = sample_uniformly(last_candidates, 10)
+
+
+        # all_sample_stars = last_candidates
 
        
 #         #Keep the best I-Score
@@ -444,61 +445,3 @@ if __name__ == '__main__':
     # print keep_max_elements_with_range([25.5], 25.5, error_range)
     # print keep_max_elements_with_range([25.3], 25.3, error_range)
 
-#########################3kevin stuff ########################################3
-#
-# # Backward Dropping Algorithm
-# def BDA(df, initial_features_sample, granularity_num, target_feature_name, error_range):
-#
-#     global_max_subset = []
-#     global_max_iscore = 0
-#     all_sample_stars = [(global_max_iscore, initial_features_sample)]
-#
-#     while len(all_sample_stars) > 0 and len(all_sample_stars[0][1]) > 1:
-#
-#         last_candidates = []
-#
-#         for sample_star in all_sample_stars:
-#             for i in range(len(sample_star[1])):
-#                 local_sample = list(sample_star[1][:i]) + list(sample_star[1][i + 1:])
-#                 # Compute I-Score
-#                 iscore = get_iscore(df, local_sample, granularity_num, target_feature_name)
-#
-#                 if 'Binding_percentage_Hfold_interacting' in local_sample or 'Delta_Delta_G' in local_sample:
-#                     print "iscore and local sample", iscore, 'len:', len(local_sample), local_sample
-#
-#                 # tmp_elems_in_range_container, tmp_lower_bound = pick_max_elements_within_range(local_sample, iscore, error_range, tmp_lower_bound, tmp_elems_in_range_container)
-#                 global_max_subset, global_max_iscore = keep_max_elements_with_range(local_sample, iscore,
-#                                                                                     error_range)  # This method has static variables
-#                 if abs(iscore - global_max_iscore) >= error_range:
-#                     last_candidates.append((iscore, local_sample))
-#
-#         all_sample_stars = sample_uniformly(last_candidates, 5)
-#
-#     return global_max_iscore, global_max_subset
-#
-# # elems_in_range is a list of tuples: (tuple's corresponding value, tuple)
-# @static_vars(lower_bound=-float("inf"), elems_in_range=[])
-# def keep_max_elements_with_range(new_element, value, error_range):  # Warning: this method has static variables
-#     #lower_bound = -float("inf")  # plus inf
-#     #upper_bound = float("inf")  # minus inf
-#     old_lower_bound = keep_max_elements_with_range.lower_bound
-#
-#     if value >= keep_max_elements_with_range.lower_bound:
-#         # Updating lower and upper bound and add new element
-#         if value - error_range > keep_max_elements_with_range.lower_bound:
-#             keep_max_elements_with_range.lower_bound = value - error_range
-#
-#         # Add new element
-#         keep_max_elements_with_range.elems_in_range.append((value, new_element))
-#
-#         # Remove unwanted values based on the new lower bound
-#         if old_lower_bound != keep_max_elements_with_range.lower_bound:
-#             keep_max_elements_with_range.elems_in_range.sort(key=lambda tup: tup[0])  # sorts in place based on the value
-#             for indx in xrange(len(keep_max_elements_with_range.elems_in_range)):
-#                 tmp_value, arr = keep_max_elements_with_range.elems_in_range[indx]
-#                 if tmp_value >= keep_max_elements_with_range.lower_bound:
-#                     break  # Since the array is sorted the rest are greater than the lower bound
-#
-#             del keep_max_elements_with_range.elems_in_range[:indx]
-#     median_value = keep_max_elements_with_range.lower_bound + error_range
-#     return keep_max_elements_with_range.elems_in_range, median_value
