@@ -98,8 +98,8 @@ def partition(df, num_partition):
     return dfs
 
 
-def find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name, neighbors_num):
-    best_feature_set = []
+def find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name, neighbors_num, best_feature_error_range):
+    best_feature_sets = []
     best_learner = None
     min_error = float("inf")  # Assume errors are positive, otherwise we consider the absolute value
 
@@ -163,7 +163,7 @@ def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num,
         avg_error /= len(partitions)
         logger.log("Selected features for " + str(learner_name) + ": " + str(best_tmp_set))
         logger.log("Average error: " + str(avg_error))
-        if avg_error < min_error:
+        if abs(avg_error) < abs(min_error):
             best_learner_name = learner_name
             best_feature_set = best_tmp_set
             min_error = avg_error
@@ -236,7 +236,7 @@ if __name__ == '__main__':
     logger.log('Initialization...')
     f_addr = '/home/seyedmah/Desktop/normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1).xlsx'
     target_feature_name = 'skip_percentage'
-    initial_subset_len = 55  # can be set to any number, we set it to all number of features
+    initial_subset_len = 55  # can be set to any number, we set it to all number of features (excluding target)
     bins_num = 11  # It is fixed according to convert_normalized_to_discrete function
     iscore_confidence_interval = 0.0001
     k_fold = 5
