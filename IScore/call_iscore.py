@@ -51,7 +51,7 @@ def convert_normalized_to_discrete_equal_bin(df, bins_num):
         if type(df[col].values[0]) == type(numpy.float64(1.4)):#1.4 is just a random number
             # print "Original: ", df[col]
             for val in df[col].values:
-                new_val = int(round(val * 10))
+                new_val = int(round(val * 100))
                 temp_columns.append(new_val)
 
             discrete_col, cutoff = discrete.discretize(temp_columns, bins_num)
@@ -227,7 +227,7 @@ def pick_max_elements_within_range(new_element, value, error_range, lower_bound=
 
 
 def sample_uniformly(samples_list, num):
-    return [samples_list[-1]]
+    # return [samples_list[-1]]
     length = len(samples_list)
     # step = length//num
     step = num
@@ -334,10 +334,8 @@ def BDA(df, initial_features_sample, granularity_num, target_feature_name, error
         #Drop a variable (i.e., each sample has length of one less than the original)
         # sample_star = local_max_subset[-1][1]
         # sample_star = local_max_subset
-        all_sample_stars = sample_uniformly(last_candidates, 10)
-
-
-        # all_sample_stars = last_candidates
+        # all_sample_stars = sample_uniformly(last_candidates, 10)
+        all_sample_stars = last_candidates
 
        
 #         #Keep the best I-Score
@@ -370,7 +368,6 @@ def feature_selection(data_frame, target_feature_name, initial_subset_len, bins_
     for name in df.columns:
         temp[name] = correct_name(name)
     df = df.rename(columns=temp)
-
 
     # #Remove target column for creating the feature sets
     # df2 = df.copy(deep=True)
@@ -421,10 +418,10 @@ def feature_selection(data_frame, target_feature_name, initial_subset_len, bins_
 
 
 if __name__ == '__main__':
-    f_addr = '/home/seyedmah/Desktop/normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1).xlsx'
+    f_addr = '/home/seyedmah/Desktop/Machine learning in Muscular dystrophy/normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1)_0.xls'
     target_feature_name = 'skip_percentage'
-    initial_subset_len = 55
-    bins_num = 11#It is fixed according to convert_normalized_to_discrete function
+    initial_subset_len = 19
+    bins_num = 6#It is fixed according to convert_normalized_to_discrete function
     error_range = 0.000000000000001
 
     data_frame = read_file(f_addr)

@@ -22,7 +22,6 @@ def compute_iscore(Y, Y_cells_avg):
     num = 0
     for inx in Y_cells_avg:
         num += pow(Y_cells_avg[inx][1], 2) * pow((Y_cells_avg[inx][0] - y_avg), 2)
-        print Y_cells_avg[inx], y_avg
 
     denom = 0
     for i in range(total_num):
@@ -37,8 +36,6 @@ def compute_iscore(Y, Y_cells_avg):
         traceback.print_stack()
         exit(1)
 
-
-    print 'iscoreeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',num,denom, iscore
     return iscore
 
 
