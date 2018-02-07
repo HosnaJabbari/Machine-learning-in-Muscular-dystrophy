@@ -198,7 +198,7 @@ def SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bin
 
 
 def apply_super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num):
-
+    # TODO compute iscore (i.e., iscore_handler) here to find sets of features set and pass it to the super_learner and SL_cross_validation
     learning_model, features = super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num)
     logger.log("Best learner details: " + str(learning_model))
     error = SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num)
@@ -237,7 +237,7 @@ if __name__ == '__main__':
     f_addr = '/home/seyedmah/Desktop/normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1).xlsx'
     target_feature_name = 'skip_percentage'
     initial_subset_len = 55  # can be set to any number, we set it to all number of features (excluding target)
-    bins_num = 11  # It is fixed according to convert_normalized_to_discrete function
+    bins_num = 6  # It is fixed according to convert_normalized_to_discrete function
     iscore_confidence_interval = 0.0001
     k_fold = 5
     skipping_thresh_value = 0.3
