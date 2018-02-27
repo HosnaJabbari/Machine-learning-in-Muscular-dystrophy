@@ -177,24 +177,27 @@ def keep_max_elements_with_range(new_element, value, error_range):  # Warning: t
     #lower_bound = -float("inf")  # plus inf
     #upper_bound = float("inf")  # minus inf
     old_lower_bound = keep_max_elements_with_range.lower_bound
-
+    print("old_lower_bound ", old_lower_bound)
     if value >= keep_max_elements_with_range.lower_bound:
         # Updating lower and upper bound and add new element
         if value - error_range > keep_max_elements_with_range.lower_bound:
             keep_max_elements_with_range.lower_bound = value - error_range
-
+            print("updated keep_max_elements_with_range")
         # Add new element
         keep_max_elements_with_range.elems_in_range.append((value, new_element))
 
         # Remove unwanted values based on the new lower bound
         if old_lower_bound != keep_max_elements_with_range.lower_bound:
             keep_max_elements_with_range.elems_in_range.sort(key=lambda tup: tup[0])  # sorts in place based on the value
+            print("Before Remove unwanted values based on the new lower bound")
+            print(keep_max_elements_with_range.elems_in_range)
             for indx in xrange(len(keep_max_elements_with_range.elems_in_range)):
                 tmp_value, arr = keep_max_elements_with_range.elems_in_range[indx]
                 if tmp_value >= keep_max_elements_with_range.lower_bound:
                     break  # Since the array is sorted the rest are greater than the lower bound
 
             del keep_max_elements_with_range.elems_in_range[:indx]
+
     median_value = keep_max_elements_with_range.lower_bound + error_range
     return keep_max_elements_with_range.elems_in_range, median_value
 
@@ -222,7 +225,7 @@ def pick_max_elements_within_range(new_element, value, error_range, lower_bound=
                     break  # Since the array is sorted the rest are greater than the lower bound
 
             del elems_in_range_container[:indx]
-
+    elems_in_range_container.sort(key=lambda tup: tup[0])
     return elems_in_range_container, lower_bound
 
 
@@ -250,6 +253,7 @@ def is_exist(my_dict, current_element):
 
 # Backward Dropping Algorithm
 def BDA(df, initial_features_sample, granularity_num, target_feature_name, error_range):
+    print("start BDA ")
     #global_max_iscore = -float('Inf')
     #global_max_subset = []
 
@@ -321,7 +325,6 @@ def BDA(df, initial_features_sample, granularity_num, target_feature_name, error
 
 
 
-
                         # #            print '\n', iscore, 'local_sample: len(',len(local_sample), ')', local_sample
     #             if abs(iscore - local_max_iscore) <= error_range:
     #                 local_max_subset.append((iscore, local_sample))
@@ -349,6 +352,8 @@ def BDA(df, initial_features_sample, granularity_num, target_feature_name, error
 # #            print '\n', global_max_iscore, 'local_sample: len(', len(global_max_subset), ')', global_max_subset
 # ##        print 'global_max_subset', global_max_subset
 # #     print 'global_max_iscore: ', global_max_iscore, ' global_max_subset: ', global_max_subset
+        print("--------------------------------------------------------------------------------------------")
+
     return global_max_iscore, global_max_subset
 
 
@@ -424,10 +429,15 @@ if __name__ == '__main__':
     target_feature_name = 'skip_percentage'
     initial_subset_len = 19
     bins_num = 6  # It is fixed according to convert_normalized_to_discrete function
-    error_range = 0.001
+    error_range = 3.0
 
     data_frame = read_file(f_addr)
     max_subsets = feature_selection(data_frame, target_feature_name, initial_subset_len, bins_num, error_range)
+
+    print("config:")
+    print("initial_subset_len = ",initial_subset_len)
+    print("bins_num = ", bins_num)
+    print("error_range = ", error_range)
 
     for i in range(len(max_subsets)):
         print '\n', i + 1, ' Best feature set len: ', len(max_subsets[i][1])
