@@ -128,7 +128,7 @@ def find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_f
         
 
 
-def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, k_fold, neighbors_num):
+def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, k_fold, neighbors_num, max_score_subsets):
     # initialization
     partitions = partition(data_frame, k_fold)
 
@@ -149,7 +149,6 @@ def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num,
             logger.log("fold no. " + str(i))
             test_df = partitions[i]
             train_df = pandas.concat(partitions[:i] + partitions[i+1:])
-            max_score_subsets = iscore_handler(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)
 
             tmp_feature_set, tmp_learner, tmp_error = find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name, neighbors_num)
 
@@ -178,7 +177,7 @@ def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num,
     return best_learner, best_feature_set
 
 # External Cross-validation
-def SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num):
+def SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num, max_score_subsets):
     logger.log("Doing cross-validation")
     partitions = partition(data_frame, k_fold)
     avg_error = 0
@@ -186,7 +185,7 @@ def SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bin
         test_df = partitions[i]
         train_df = pandas.concat(partitions[:i] + partitions[i+1:])
 
-        tmp_learner, tmp_features = super_learner(train_df, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num)
+        tmp_learner, tmp_features = super_learner(train_df, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num, max_score_subsets)
         
         test_X_data = get_dependent_data(test_df, tmp_features)
         test_y_data = get_independent_data(test_df, target_feature_name)
@@ -199,11 +198,12 @@ def SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bin
 
 def apply_super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num):
     # TODO compute iscore (i.e., iscore_handler) here to find sets of features set and pass it to the super_learner and SL_cross_validation
-    learning_model, features = super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num)
+    max_score_subsets = iscore_handler(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)
+    learning_model, features = super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num, max_score_subsets)
     logger.log("Best learner details: " + str(learning_model))
-    error = SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num)
+    error = SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num, max_score_subsets)
     logger.log("Error of best learner (based on cross-validation): " + str(error))
-    return learning_model, features, error
+    return learning_model, error, features
 
 
 def calculate_accuracy(observed_list, predict_list, thresh_value):
@@ -234,11 +234,11 @@ if __name__ == '__main__':
 
     # Initialization
     logger.log('Initialization...')
-    f_addr = '/home/seyedmah/Desktop/normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1).xlsx'
+    f_addr = './normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1).xlsx'
     target_feature_name = 'skip_percentage'
-    initial_subset_len = 55  # can be set to any number, we set it to all number of features (excluding target)
+    initial_subset_len = 19  # can be set to any number, we set it to all number of features (excluding target)
     bins_num = 6  # It is fixed according to convert_normalized_to_discrete function
-    iscore_confidence_interval = 0.0001
+    iscore_confidence_interval = 3.5
     k_fold = 5
     skipping_thresh_value = 0.3
     neighbors_num = 5
