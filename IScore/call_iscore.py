@@ -177,20 +177,20 @@ def keep_max_elements_with_range(new_element, value, error_range):  # Warning: t
     #lower_bound = -float("inf")  # plus inf
     #upper_bound = float("inf")  # minus inf
     old_lower_bound = keep_max_elements_with_range.lower_bound
-    print("old_lower_bound ", old_lower_bound)
+    #print("old_lower_bound ", old_lower_bound)
     if value >= keep_max_elements_with_range.lower_bound:
         # Updating lower and upper bound and add new element
         if value - error_range > keep_max_elements_with_range.lower_bound:
             keep_max_elements_with_range.lower_bound = value - error_range
-            print("updated keep_max_elements_with_range")
+            #print("updated keep_max_elements_with_range")
         # Add new element
         keep_max_elements_with_range.elems_in_range.append((value, new_element))
 
         # Remove unwanted values based on the new lower bound
         if old_lower_bound != keep_max_elements_with_range.lower_bound:
             keep_max_elements_with_range.elems_in_range.sort(key=lambda tup: tup[0])  # sorts in place based on the value
-            print("Before Remove unwanted values based on the new lower bound")
-            print(keep_max_elements_with_range.elems_in_range)
+            #print("Before Remove unwanted values based on the new lower bound")
+            #print(keep_max_elements_with_range.elems_in_range)
             for indx in xrange(len(keep_max_elements_with_range.elems_in_range)):
                 tmp_value, arr = keep_max_elements_with_range.elems_in_range[indx]
                 if tmp_value >= keep_max_elements_with_range.lower_bound:
@@ -318,7 +318,7 @@ def BDA(df, initial_features_sample, granularity_num, target_feature_name, error
                         # last_candidates = [(iscore, local_sample)]
                     # if local_max_iscore == iscore:
                         last_candidates.append((iscore, local_sample))
-                        print 'Last candidate len: ', len(last_candidates)
+                        #print 'Last candidate len: ', len(last_candidates)
                         if 'Binding_percentage_Hfold_interacting' in local_sample or 'Delta_Delta_G' in local_sample:
                             print "iscore and local sample", iscore, 'len:', len(local_sample), local_sample
 
@@ -352,7 +352,6 @@ def BDA(df, initial_features_sample, granularity_num, target_feature_name, error
 # #            print '\n', global_max_iscore, 'local_sample: len(', len(global_max_subset), ')', global_max_subset
 # ##        print 'global_max_subset', global_max_subset
 # #     print 'global_max_iscore: ', global_max_iscore, ' global_max_subset: ', global_max_subset
-        print("--------------------------------------------------------------------------------------------")
 
     return global_max_iscore, global_max_subset
 
