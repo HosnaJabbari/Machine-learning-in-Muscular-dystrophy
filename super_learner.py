@@ -89,12 +89,13 @@ def get_independent_data(df, target_feature_name):
 
 
 def partition(df, num_partition):
+    print("start partition")
     permuted_indices = np.random.permutation(len(df))
-
+    print("finished permuted indices")
     dfs = []
     for i in xrange(num_partition):
         dfs.append(df.iloc[permuted_indices[i::num_partition]])
-
+    print("end partition")
     return dfs
 
 
@@ -197,8 +198,9 @@ def SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bin
 
 
 def apply_super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num):
-    # TODO compute iscore (i.e., iscore_handler) here to find sets of features set and pass it to the super_learner and SL_cross_validation
+    logger.log("start iscore_handler")
     max_score_subsets = iscore_handler(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)
+    logger.log("done iscore_handler")
     learning_model, features = super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num, max_score_subsets)
     logger.log("Best learner details: " + str(learning_model))
     error = SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num, max_score_subsets)
@@ -234,7 +236,7 @@ if __name__ == '__main__':
 
     # Initialization
     logger.log('Initialization...')
-    f_addr = './normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1).xlsx'
+    f_addr = './normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1)_0.xls'
     target_feature_name = 'skip_percentage'
     initial_subset_len = 19  # can be set to any number, we set it to all number of features (excluding target)
     bins_num = 6  # It is fixed according to convert_normalized_to_discrete function

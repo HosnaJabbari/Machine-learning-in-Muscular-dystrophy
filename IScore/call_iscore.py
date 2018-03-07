@@ -319,8 +319,8 @@ def BDA(df, initial_features_sample, granularity_num, target_feature_name, error
                     # if local_max_iscore == iscore:
                         last_candidates.append((iscore, local_sample))
                         #print 'Last candidate len: ', len(last_candidates)
-                        if 'Binding_percentage_Hfold_interacting' in local_sample or 'Delta_Delta_G' in local_sample:
-                            print "iscore and local sample", iscore, 'len:', len(local_sample), local_sample
+#                        if 'Binding_percentage_Hfold_interacting' in local_sample or 'Delta_Delta_G' in local_sample:
+#                            print "iscore and local sample", iscore, 'len:', len(local_sample), local_sample
 
 
 
