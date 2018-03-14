@@ -6,7 +6,7 @@ import pandas
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-
+import os
 
 def evaluation_error(learner, test_X_data, test_y_data):
     #classifier = learn(train_df, target_feature_name, temp_feature_subset, learner_name, neighbors_num)
@@ -89,17 +89,14 @@ def get_independent_data(df, target_feature_name):
 
 
 def partition(df, num_partition):
-    print("start partition")
     permuted_indices = np.random.permutation(len(df))
-    print("finished permuted indices")
     dfs = []
     for i in xrange(num_partition):
         dfs.append(df.iloc[permuted_indices[i::num_partition]])
-    print("end partition")
     return dfs
 
 
-def find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name, neighbors_num, best_feature_error_range):
+def find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name, neighbors_num):
     best_feature_sets = []
     best_learner = None
     min_error = float("inf")  # Assume errors are positive, otherwise we consider the absolute value
@@ -196,10 +193,46 @@ def SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bin
     avg_error /= kfold
     return avg_error
 
+def read_feature_selection_result(iscore_result_filename):
+    all_feature_set = []
+    fp = open(iscore_result_filename)
+    lines = fp.readlines()
+    fp.close()
+    for line in lines:
+        line = line.strip()
+        if("###" in line or len(line) <= 0):
+            continue
+        tmp = line.split()
+        features = tmp[1:]
+        tmp = []
+        for feature in features:
+            unicode_feature = unicode(feature, "utf-8")
+            tmp.append(unicode_feature)
+        all_feature_set.append(tmp)
+    for aa in all_feature_set:
+        print(aa)
+    return all_feature_set
+
+#what iscore_handler return is a list of tuples
+#each tuple is (iscore1, [feature1, feature2,...])
+#need to remove the score so we have a list of list of features ie. [[feature1, feature2,..],[feature3, feature4, ...], ...]
+def reformat_feature_sets(max_score_subsets):
+    feature_set = []
+    for element in max_score_subsets:
+        feature_set.append(element[1])
+    return feature_set
 
 def apply_super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num):
     logger.log("start iscore_handler")
-    max_score_subsets = iscore_handler(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)
+
+    iscore_result_filename = "./iscore_result_" + str(iscore_confidence_interval) + ".txt"
+    if(os.path.exists(iscore_result_filename)):
+        max_score_subsets = read_feature_selection_result(iscore_result_filename)
+    else:
+        max_score_subsets = iscore_handler(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)
+
+        max_score_subsets = reformat_feature_sets(max_score_subsets)
+
     logger.log("done iscore_handler")
     learning_model, features = super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num, max_score_subsets)
     logger.log("Best learner details: " + str(learning_model))

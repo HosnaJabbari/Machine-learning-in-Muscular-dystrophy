@@ -355,7 +355,34 @@ def BDA(df, initial_features_sample, granularity_num, target_feature_name, error
 
     return global_max_iscore, global_max_subset
 
+#return True if success
+#return False if fail
+def create_feature_set_file(initial_subset_len, bins_num, error_range, max_subsets):
+    try:
+        iscore_result_filename = "iscore_result_" + str(error_range) + ".txt"
+        fp = open(iscore_result_filename, "w")
 
+        fp.write("###config: \n")
+        fp.write("###initial_subset_len = " + str(initial_subset_len) + "\n")
+        fp.write("###bins_num = " + str(bins_num) + "\n")
+        fp.write("###error_range = " + str(error_range) + "\n")
+
+        for i in range(len(max_subsets)):
+            iscore = max_subsets[i][0]
+            line = "{} ".format(iscore)
+            fp.write(line)
+            feature_set = max_subsets[i][1]
+            for feature in feature_set:
+                fp.write(str(feature)+" ")
+            fp.write("\n")
+        fp.flush()
+        fp.close()
+    except:
+        return False
+    return True
+
+#return iscore_result_ERROR_RANGE.txt if success
+#return False if fail
 def feature_selection(data_frame, target_feature_name, initial_subset_len, bins_num, error_range, debug=False):
     max_iscore = -float('Inf')
     max_subsets = []
@@ -417,6 +444,9 @@ def feature_selection(data_frame, target_feature_name, initial_subset_len, bins_
     if debug:
         print '\nInitial subset length: ', initial_subset_len
         print 'Best I-Score: ', max_iscore
+
+    create_feature_set_file(initial_subset_len, bins_num, error_range, max_subsets)
+
     return max_subsets
     
 
@@ -424,7 +454,7 @@ def feature_selection(data_frame, target_feature_name, initial_subset_len, bins_
 if __name__ == '__main__':
     #normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1)_0.xls is the final set of features to evaluate
     #normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1)_i.xls where i>0 is the groups of features that their candidate is put in the final set
-    f_addr = '/home/seyedmah/Desktop/Machine learning in Muscular dystrophy/normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1)_0.xls'
+    f_addr = './normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1)_0.xls'
     target_feature_name = 'skip_percentage'
     initial_subset_len = 19
     bins_num = 6  # It is fixed according to convert_normalized_to_discrete function
