@@ -454,11 +454,11 @@ def feature_selection(data_frame, target_feature_name, initial_subset_len, bins_
 if __name__ == '__main__':
     #normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1)_0.xls is the final set of features to evaluate
     #normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1)_i.xls where i>0 is the groups of features that their candidate is put in the final set
-    f_addr = './normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1)_0.xls'
+    f_addr = '../normalized_data_Jan10(Exon_Malueka_Category_C-0_A-1)_0.xls'
     target_feature_name = 'skip_percentage'
     initial_subset_len = 19
     bins_num = 6  # It is fixed according to convert_normalized_to_discrete function
-    error_range = 3.5
+    error_range = 6.5
 
     data_frame = read_file(f_addr)
     max_subsets = feature_selection(data_frame, target_feature_name, initial_subset_len, bins_num, error_range)

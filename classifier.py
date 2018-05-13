@@ -87,7 +87,8 @@ class KNeighbors_regressor(Classifier, KNeighborsRegressor):
 class Decision_tree_regressor(Classifier, DecisionTreeRegressor):
     
     def __init__(self):
-        DecisionTreeRegressor.__init__(self, random_state=0)
+        DecisionTreeRegressor.__init__(self)
+        #DecisionTreeRegressor.__init__(self, random_state=0)
         #super(Decision_tree_regressor, self).__init__(*args, **kwargs)
 
     # def instantiate(self):

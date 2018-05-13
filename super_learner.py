@@ -73,7 +73,22 @@ def iscore_handler(data_frame, target_feature_name, initial_subset_len, bins_num
     # df_cp = data_frame.copy()
 
 #    df = c_iscore.convert_normalized_to_discrete_equal_bin(df_cp, bins_num)  # I-Score works only with descrete values
-    max_score_subsets = c_iscore.feature_selection(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)  # TODO check if the feature selection excludes the target column from the dependant column
+    #max_score_subsets = c_iscore.feature_selection(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)  # TODO check if the feature selection excludes the target column from the dependant column
+
+    iscore_result_filename = "./iscore_result_" + str(iscore_confidence_interval) + ".txt"
+    if (os.path.exists(iscore_result_filename)):
+        max_score_subsets = read_feature_selection_result(iscore_result_filename)
+        # TODO kevin remove following
+        #TEST_NUM = 655  #226 is the current optimal we found, 70 have mse 0.14,acc 0.666
+        #max_score_subsets = [max_score_subsets[TEST_NUM]]
+        #print("hi ", max_score_subsets)
+    else:
+        max_score_subsets = c_iscore.feature_selection(data_frame, target_feature_name,
+                                                                           initial_subset_len, bins_num,
+                                                                           iscore_confidence_interval)
+
+        max_score_subsets = reformat_feature_sets(max_score_subsets)
+
     return max_score_subsets    
 
 def get_dependent_data(df, feature_set):
@@ -89,14 +104,21 @@ def get_independent_data(df, target_feature_name):
 
 
 def partition(df, num_partition):
+    #print("inside partition, length df: ", len(df))
     permuted_indices = np.random.permutation(len(df))
+    #print("permuted_indices: ", permuted_indices)
     dfs = []
     for i in xrange(num_partition):
         dfs.append(df.iloc[permuted_indices[i::num_partition]])
+    #print("dfs", len(dfs))
+    #for ele in dfs:
+    #    print(ele)
+    #    print(len(ele))
+    #    print("~~~~~~~~~~~~~")
     return dfs
 
 
-def find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name, neighbors_num):
+def find_best_feature_set_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name, neighbors_num):
     best_feature_sets = []
     best_learner = None
     min_error = float("inf")  # Assume errors are positive, otherwise we consider the absolute value
@@ -135,6 +157,8 @@ def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num,
     min_error = float('Inf')
 
     for learner_name in classifier.ClassifierType:
+        if(learner_name == classifier.ClassifierType.DECISION_TREE_REGRESSOR):
+            continue
         logger.log("Start: " + str(learner_name))
 
         avg_error = 0
@@ -148,7 +172,7 @@ def super_learner(data_frame, target_feature_name, initial_subset_len, bins_num,
             test_df = partitions[i]
             train_df = pandas.concat(partitions[:i] + partitions[i+1:])
 
-            tmp_feature_set, tmp_learner, tmp_error = find_best_futures_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name, neighbors_num)
+            tmp_feature_set, tmp_learner, tmp_error = find_best_feature_set_and_learner(train_df, test_df, max_score_subsets, target_feature_name, learner_name, neighbors_num)
 
             logger.log("Fold error: " + str(tmp_error))
             logger.log("Fold selected features: " + str(tmp_feature_set))
@@ -209,8 +233,7 @@ def read_feature_selection_result(iscore_result_filename):
             unicode_feature = unicode(feature, "utf-8")
             tmp.append(unicode_feature)
         all_feature_set.append(tmp)
-    for aa in all_feature_set:
-        print(aa)
+
     return all_feature_set
 
 #what iscore_handler return is a list of tuples
@@ -222,21 +245,43 @@ def reformat_feature_sets(max_score_subsets):
         feature_set.append(element[1])
     return feature_set
 
+def kevin_test_super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num, max_score_subsets):
+    print("inside kevin test super learner")
+    TEST_NUM_list = [106,266,362,87,342,655]
+    for TEST_NUM in TEST_NUM_list:
+        features = max_score_subsets[TEST_NUM]
+
+        print("feature is:  ",features)
+        learner_name = classifier.ClassifierType.DECISION_TREE_REGRESSOR
+        X_dependent_data = get_dependent_data(data_frame, features)
+        y_indep_data = get_independent_data(data_frame, target_feature_name)
+        learner = learn(X_dependent_data, y_indep_data, learner_name, neighbors_num)
+
+        predict_y_data = learner.predict(X_dependent_data)
+        thresh_value = 0.3
+        accuracy = calculate_accuracy(y_indep_data, predict_y_data, thresh_value)
+        print('Accuracy: ', accuracy)
+        opt_model_error = evaluation_error(learner, X_dependent_data, y_indep_data)
+        print('opt_model_error: ', opt_model_error)
+        print()
+    exit(999)
+    return
+
 def apply_super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num):
     logger.log("start iscore_handler")
-
-    iscore_result_filename = "./iscore_result_" + str(iscore_confidence_interval) + ".txt"
-    if(os.path.exists(iscore_result_filename)):
-        max_score_subsets = read_feature_selection_result(iscore_result_filename)
-    else:
-        max_score_subsets = iscore_handler(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)
-
-        max_score_subsets = reformat_feature_sets(max_score_subsets)
-
+    max_score_subsets = iscore_handler(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval)
     logger.log("done iscore_handler")
-    learning_model, features = super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num, max_score_subsets)
-    logger.log("Best learner details: " + str(learning_model))
-    error = SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num, max_score_subsets)
+
+    # TODO kevin put this back
+    #learning_model, features = super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num, max_score_subsets)
+    #logger.log("Best learner details: " + str(learning_model))
+    #error = SL_cross_validation(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num, max_score_subsets)
+
+    #TODO kevin remove this
+    kevin_test_super_learner(data_frame, target_feature_name, initial_subset_len, bins_num, iscore_confidence_interval, kfold, neighbors_num, max_score_subsets)
+    error = 999
+
+
     logger.log("Error of best learner (based on cross-validation): " + str(error))
     return learning_model, error, features
 
@@ -297,8 +342,9 @@ if __name__ == '__main__':
     print('Machine learning model:', learning_model)
     logger.log('Features: ' + str(feature_subset))
     print('Features: ', feature_subset)  # TODO check if the order of the features are the same as the coefficients
-    logger.log('Mean squared error: ' + str(avg_error))
-    print('Mean squared error:%.2f' % avg_error)
+    #TODO kevin change error back to non hardcoded version
+    logger.log('SL_cross_validation Mean squared error: ' + str(avg_error))
+    print('SL_cross_validation Mean squared error:%.2f' % avg_error)
 
     logger.log('input features:' + str(X_data))
     print('input features:', X_data)
@@ -307,9 +353,17 @@ if __name__ == '__main__':
     logger.log('Predicted: ' + str(predict_y_data))
     print('Predicted: ', predict_y_data)
     accuracy = calculate_accuracy(observed_y_data, predict_y_data, thresh_value)
+
+    #todo kevin remove
+    print('Machine learning model:', learning_model)
+    print('Features: ', feature_subset)
+
+
     logger.log('Accuracy: ' + str(accuracy))
     print('Accuracy: ', accuracy)
 
+    opt_model_error = evaluation_error(learning_model, X_data, observed_y_data)
+    print('opt_model_error: ', opt_model_error)
 
     # Plot
     logger.log("Plot the diagram...")
